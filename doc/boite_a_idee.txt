@@ -1,0 +1,16 @@
+architecture, 5 groupe de service interne :
+Gestion des services internes :
+	phare : service ou s'enregistre les autre service
+	survei : service de gestion des défaults de service
+gestion des utilisateur :
+	authentification
+	inscription
+deploiement :
+	analyse de répertoire
+	registre d'image
+	deploiement d'image
+	gestion des domaines dns
+hebergement :
+	gestion du routage
+	gestion des objets utilisateur
+monitoring :
