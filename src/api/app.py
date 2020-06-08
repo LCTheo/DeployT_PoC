@@ -18,5 +18,5 @@ registerAddress = "register"
 class ResourcesList(Resource):
 
     def get(self, user_id):
-        r = requests.get('http://register/status')
+        r = requests.get('http://register:5000/status')
         return {'response': r.json()}, 200

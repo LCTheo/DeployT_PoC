@@ -6,8 +6,6 @@ app = Flask(__name__)
 CORS(app)
 api = Api(app=app, version='1.0', title='register service', validate=True)
 
-registerAddress = "register"
-
 
 @api.route("/status")
 class ResourcesList(Resource):
