@@ -18,4 +18,5 @@ registerAddress = "register"
 class ResourcesList(Resource):
 
     def get(self, user_id):
-        url = 'http://register/document/record/_search?pretty=true'
+        r = requests.get('http://register/status')
+        return {'response': r.json()}, 200
