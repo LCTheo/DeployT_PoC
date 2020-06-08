@@ -17,6 +17,6 @@ registerAddress = "register"
 @api.route("/api/status")
 class ResourcesList(Resource):
 
-    def get(self, user_id):
+    def get(self):
         r = requests.get('http://register:5000/status')
         return {'response': r.json()}, 200
