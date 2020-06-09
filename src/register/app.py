@@ -9,7 +9,7 @@ import yaml
 
 app = Flask(__name__)
 CORS(app)
-api = Api(app=app, version='0.1', validate=True)  #, doc=False
+api = Api(app=app, version='0.1', validate=True, doc=False)  #
 registrationArg = reqparse.RequestParser()
 registrationArg.add_argument('type', type=str, required=True)
 registrationArg.add_argument('address', type=str, required=True)
