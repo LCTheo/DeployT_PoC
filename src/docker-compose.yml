@@ -1,11 +1,15 @@
 version: "3.8"
 
 services:
+  register:
+    build: register
+    container_name: register
+    environment:
+      name: register
   api:
     build: api
     container_name: api
     ports :
-    - "8080:5000"
-  register:
-    build: register
-    container_name: register
+      - "80:5000"
+    environment:
+      name : api
