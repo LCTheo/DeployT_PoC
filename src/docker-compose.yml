@@ -6,6 +6,9 @@ services:
     container_name: register
     environment:
       name: register
+    networks:
+      - services
+
   api:
     build: api
     container_name: api
@@ -13,3 +16,42 @@ services:
       - "80:5000"
     environment:
       name : api
+    networks:
+      - services
+
+  registration:
+    build: registration
+    container_name: registration
+    environment:
+      name: registration
+    networks:
+      - services
+      - db-user
+
+  oauth:
+    build: oauth
+    container_name: oauth
+    environment:
+      name: oauth
+    networks:
+      - services
+      - db-user
+    ports:
+      - "5000:5000"
+
+  db-user:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - DB-user:/data/db
+    networks:
+      - db-user
+    ports:
+      - "27017:27017"
+
+networks:
+  services:
+  db-user:
+
+volumes:
+  DB-user:

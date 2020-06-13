@@ -2,3 +2,7 @@ api:
   card: 1
 register:
   card: 1
+registration:
+  card: 1
+oauth:
+  card: 1

@@ -9,7 +9,7 @@ import yaml
 
 app = Flask(__name__)
 CORS(app)
-api = Api(app=app, version='0.1', validate=True, doc=False)  #
+api = Api(app=app, version='0.1', validate=True, doc=False)
 registrationArg = reqparse.RequestParser()
 registrationArg.add_argument('type', type=str, required=True)
 registrationArg.add_argument('address', type=str, required=True)
@@ -35,12 +35,12 @@ class status(Resource):
         return {'status': status}, 200
 
 
-@api.expect(registrationArg)
 @api.route("/registration")
 class registration(Resource):
 
     @api.response(200, 'Registration : Success')
     @api.response(400, 'Registration : error')
+    @api.expect(registrationArg)
     def post(self):
         global services
         data = registrationArg.parse_args(request)
