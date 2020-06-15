@@ -36,8 +36,6 @@ services:
     networks:
       - services
       - db-user
-    ports:
-      - "5000:5000"
 
   db-user:
     image: mongo:latest
