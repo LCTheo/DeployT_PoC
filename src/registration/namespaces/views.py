@@ -2,63 +2,53 @@ from flask import request
 from flask_restx import Namespace, Resource
 import hashlib
 
-from .models import user_definition, User, user_id, Admin
-import dbFunction
+from .models import user_definition_model, User, username_model, Attribute_Change_model
 
 api = Namespace('views', description='route of the api', path="/")
-
-userTable = dbFunction.UserTableHandler(api, "user")
-adminTable = dbFunction.UserTableHandler(api, "admin")
 
 
 @api.route("/registration/user")
 class registrationUser(Resource):
 
-    @api.expect(user_definition)
+    @api.expect(user_definition_model)
     def post(self):
         data = request.get_json()
-        login = data.get('login')
+        username = data.get('username')
         password = data.get('password')
-        user = User(login=login, password=hashlib.sha512(password.encode("utf-8")).hexdigest())
+        user = User(username=username, password=hashlib.sha512(password.encode("utf-8")).hexdigest(), testField=None)
         if user.save(force_insert=True):
             return {'state': "OK"}, 200
         else:
             return {'state': "fail"}, 200
 
-    @api.expect(user_id)
+    @api.expect(username_model)
     def delete(self):
         data = request.get_json()
-        user_id = data.get('user_id')
-        user = User.objects(id=user_id)
+        username = data.get('username')
+        user = User.objects(username=username).first()
         if user:
+
             user.delete()
             return {'state': "OK"}, 200
         else:
             return {'state': "fail"}, 200
 
 
-@api.route("/registration/admin")
-class registrationAdmin(Resource):
+@api.route("/userInfo/<string:username>/<string:field>")
+class registrationUser(Resource):
 
-    @api.expect(user_definition)
-    def post(self):
+    @api.expect(Attribute_Change_model)
+    def post(self, username, field):
         data = request.get_json()
-        login = data.get('login')
-        password = data.get('password')
-        admin = Admin(login=login, password=hashlib.sha512(password.encode("utf-8")).hexdigest())
-        if admin.save(force_insert=True):
-            return {'state': "OK"}, 200
-        else:
-            return {'state': "fail"}, 200
-
-    @api.expect(user_definition)
-    def delete(self):
-        data = request.get_json()
-        login = data.get('login')
-        password = data.get('password')
-        admin = Admin.objects(login=login, password=hashlib.sha512(password.encode("utf-8")).hexdigest())
-        if admin:
-            admin.delete()
-            return {'state': "OK"}, 200
-        else:
-            return {'state': "fail"}, 200
+        user = User.objects(username=username).first()
+        if user:
+            if field in user:
+                if field == "password":
+                    user.password = hashlib.sha512(data.get('new_value').encode("utf-8")).hexdigest()
+                else:
+                    user[field] = data.get('new_value')
+                    user.save()
+                return {}, 200
+            else:
+                return {}, 400
+        return {}, 400

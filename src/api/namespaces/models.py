@@ -4,7 +4,7 @@ from flask_restx import fields, Namespace
 api = Namespace('models', description='all models used')
 
 user_definition = api.model('User Informations', {
-    'login': fields.String(required=True),
+    'username': fields.String(required=True),
     'password': fields.String(required=True)
 })
 
@@ -13,5 +13,11 @@ token_model = api.model('token', {
 })
 
 delete_model = api.inherit('delete', token_model, {
-    'user_id': fields.String(required=True)
+    'username': fields.String(required=True)
+})
+
+setting_model = api.inherit('field modification', token_model, {
+    'username': fields.String(required=True),
+    'field_name': fields.String(required=True),
+    'new_value': fields.String(required=True)
 })

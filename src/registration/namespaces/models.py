@@ -3,29 +3,26 @@ import mongoengine as me
 
 api = Namespace('models', description='all models used')
 
-user_definition = api.model('User Informations', {
-    'login': fields.String(required=True),
+user_definition_model = api.model('User Informations', {
+    'username': fields.String(required=True),
     'password': fields.String(required=True)
 })
 
-Attribute_Change = api.model('Attribute modification', {
-    'login': fields.String(required=True),
-    'newAttribute': fields.String(required=True)
+Attribute_Change_model = api.model('Attribute modification', {
+    'new_value': fields.String(required=True)
 })
 
-user_id = api.model('user_id', {
-    'user_id': fields.String(required=True)
+username_model = api.model('username', {
+    'username': fields.String(required=True)
 })
 
 
 class User(me.Document):
-    login = me.StringField(unique=True)
-    password = me.StringField()
+    username = me.StringField(unique=True, required=True)
+    password = me.StringField(required=True)
+    testField = me.StringField(default="")
 
 
-class Admin(me.Document):
-    login = me.StringField(unique=True)
-    password = me.StringField()
 
 
 

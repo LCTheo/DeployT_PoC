@@ -4,12 +4,12 @@ import mongoengine as me
 api = Namespace('models', description='all models used')
 
 user_auth = api.model('User Informations', {
-    'login': fields.String(required=True),
+    'username': fields.String(required=True),
     'password': fields.String(required=True)
 })
 
 validation = api.model('validation', {
-    'user_id': fields.String(required=True),
+    'username': fields.String(required=True),
     'token': fields.String(required=True)
 })
 
@@ -19,16 +19,15 @@ token_model = api.model('token', {
 
 
 class User(me.Document):
-    id = me.IntField(primary_key=True)
-    login = me.StringField(unique=True)
-    password = me.StringField()
+    username = me.StringField(unique=True, required=True)
+    password = me.StringField(required=True)
+    testField = me.StringField(default="")
 
 
 class Token(me.Document):
-    id = me.IntField(primary_key=True)
-    user_id = me.IntField(required=True)
-    access_token = me.StringField(unique=True)
-    expires = me.DateTimeField
+    username = me.StringField(unique=True, required=True)
+    access_token = me.StringField(unique=True, required=True)
+    expires = me.DateTimeField(required=True)
 
 
 

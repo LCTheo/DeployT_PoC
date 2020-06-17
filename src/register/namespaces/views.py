@@ -6,12 +6,13 @@ from flask_restx import Namespace, Resource
 from .models import registrationArg
 
 api = Namespace('views', description='route of the api', path="/")
+
 serviceName = os.getenv('name')
-f = open('./services.yml')
-services = yaml.load(f, Loader=yaml.FullLoader)
-for key in services:
-    services[key]['address'] = []
-services['register']['address'].append(serviceName)
+with open('./services.yml') as f:
+    services = yaml.load(f, Loader=yaml.FullLoader)
+    for key in services:
+        services[key]['address'] = []
+    services['register']['address'].append(serviceName)
 
 
 @api.route("/status")
