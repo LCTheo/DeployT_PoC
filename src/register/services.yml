@@ -6,3 +6,5 @@ registration:
   card: 1
 oauth:
   card: 1
+deploy:
+  card: 1

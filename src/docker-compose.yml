@@ -37,6 +37,18 @@ services:
       - services
       - db-user
 
+  deploy:
+    build: deploy
+    container_name: deploy
+    environment:
+      name: deploy
+    networks:
+      - services
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - "5000:5000"
+
   db-user:
     image: mongo:latest
     container_name: mongo
