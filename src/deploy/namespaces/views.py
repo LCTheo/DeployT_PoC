@@ -23,8 +23,6 @@ class deployment(Resource):
     @api.expect(options)
     def delete(self, user, image):
         """docker stop"""
-        rep = client.deploy("testapp:latest")
-        api.logger.error(rep)
         return {}, 200
 
 
@@ -34,8 +32,6 @@ class reload(Resource):
     @api.expect(options)
     def put(self, username, container):
         """rebuild du container"""
-        rep = client.deploy("testapp:latest")
-        api.logger.error(rep)
         return {}, 200
 
 
