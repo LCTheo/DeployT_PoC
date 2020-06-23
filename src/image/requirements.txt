@@ -1,0 +1,6 @@
+flask
+flask-restx
+flask-cors
+requests
+docker
+gitpython

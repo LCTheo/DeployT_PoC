@@ -46,8 +46,18 @@ services:
       - services
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  image:
+    build: image
+    container_name: image
+    environment:
+      name: image
+    networks:
+      - services
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
-    - "5000:5000"
+      - "5000:5000"
 
   db-user:
     image: mongo:latest

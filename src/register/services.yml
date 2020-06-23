@@ -8,3 +8,5 @@ oauth:
   card: 1
 deploy:
   card: 1
+image:
+  card: 1

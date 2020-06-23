@@ -1,7 +1,7 @@
 import docker
 
 
-class DockerClient:
+class DockerContainer:
 
     def __init__(self):
         self.client = docker.from_env()

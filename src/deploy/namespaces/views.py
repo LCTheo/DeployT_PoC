@@ -2,11 +2,11 @@ from flask import request
 from flask_restx import Namespace, Resource
 import requests
 
-from core import DockerClient, lisToDict
+from core import DockerContainer, lisToDict
 from .models import options
 
 api = Namespace('views', description='route of the api', path="/")
-client = DockerClient()
+client = DockerContainer()
 
 
 @api.route("/deployment/<string:image>")

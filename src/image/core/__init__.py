@@ -1,3 +1,3 @@
 from .connexion import init, getService
-from .docker import DockerContainer
+from .docker import DockerImage
 from .utils import lisToDict
