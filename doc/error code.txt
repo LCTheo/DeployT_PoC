@@ -1,0 +1,35 @@
+nomantalture : 00X 00 000
+		00X : code du service
+		00 : code du type d'erreur 
+		000 : code erreur
+
+liste 00X :
+01: register
+02: api
+03: deploy
+04: image
+05: oauth
+06: projectManager
+07: registration
+
+liste 00 000:
+01: service registration
+	001: error at request
+02: deployment error
+	001: APIError
+	002: ContainerError
+	003: Unknow Image
+	004: ImageNotFound
+	005: Container NotFound
+	005: Network NotFound
+03: project M
+	001: project not found
+	002: network not found
+	003: container already exist
+04 : image build
+	001: APIError
+	002: BuildError
+	003: no path specified
+
+	
+

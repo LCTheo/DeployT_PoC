@@ -16,13 +16,17 @@ class deployment(Resource):
     def post(self, image):
         """docker run"""
         data = request.get_json()
-        if client.imageExist(image):
+        exist = client.imageExist(image)
+        if exist == "0":
             labels = lisToDict(data.get('labels'))
-            if client.deploy(image, data.get('name'), data.get('hostname'), data.get('environment'), labels,
-                             data.get('network')):
+            deprep = client.deploy(image, data.get('name'), data.get('hostname'), data.get('environment'), labels,
+                                   data.get('network'))
+            if deprep == "0":
                 return {}, 200
             else:
-                return {}, 400
+                return {'code': deprep}, 400
+        else:
+            return {'code': exist}, 400
 
 
 @api.route("/manage/<string:container>")
@@ -31,10 +35,10 @@ class manage(Resource):
     def get(self, container):
         """get container data"""
         container = client.getContainer(container)
-        if container == -1:
-            return {}, 400
+        if container[0] == "0":
+            return container[1].labels, 200
         else:
-            return container.labels, 200
+            return {'code': container[0]}, 400
 
     @api.expect(options)
     def put(self, container):
@@ -43,7 +47,35 @@ class manage(Resource):
 
     def delete(self, container):
         """docker rm"""
-        if client.deleteContainer(container) == 0:
+        rm = client.deleteContainer(container)
+        if rm == "0":
             return {}, 200
         else:
-            return {}, 400
+            return {'code': rm}, 400
+
+
+@api.route("/network/<string:networkId>")
+class manage(Resource):
+
+    def get(self, networkId):
+        """get network data"""
+        res = client.createNetwork(networkId)
+        if res == "0":
+            return {}, 200
+        else:
+            return {'code': res}, 400
+
+    def post(self, networkId):
+        res = client.createNetwork(networkId)
+        if res == "0":
+            return {}, 200
+        else:
+            return {'code': res}, 400
+
+    def delete(self, networkId):
+        """delete network"""
+        res = client.deleteNetwork(networkId)
+        if res == "0":
+            return {}, 200
+        else:
+            return {'code': res}, 400

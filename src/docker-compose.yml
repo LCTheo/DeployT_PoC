@@ -4,6 +4,7 @@ services:
   register:
     build: register
     container_name: register
+    restart: unless-stopped
     environment:
       name: register
     networks:
@@ -12,6 +13,7 @@ services:
   api:
     build: api
     container_name: api
+    restart: unless-stopped
     ports :
       - "80:5000"
     environment:
@@ -22,6 +24,7 @@ services:
   registration:
     build: registration
     container_name: registration
+    restart: unless-stopped
     environment:
       name: registration
     networks:
@@ -31,6 +34,7 @@ services:
   oauth:
     build: oauth
     container_name: oauth
+    restart: unless-stopped
     environment:
       name: oauth
     networks:
@@ -40,6 +44,7 @@ services:
   deploy:
     build: deploy
     container_name: deploy
+    restart: unless-stopped
     environment:
       name: deploy
     networks:
@@ -50,18 +55,30 @@ services:
   image:
     build: image
     container_name: image
+    restart: unless-stopped
     environment:
       name: image
     networks:
       - services
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+
+  project:
+    build: projectManager
+    container_name: project
+    restart: unless-stopped
+    environment:
+      name: project
+    networks:
+      - services
+      - db-user
     ports:
       - "5000:5000"
 
   db-user:
     image: mongo:latest
     container_name: mongo
+    restart: always
     volumes:
       - DB-user:/data/db
     networks:

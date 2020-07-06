@@ -1,9 +1,8 @@
 from flask import request
 from flask_restx import Namespace, Resource
-import requests
 
-from core import DockerImage, lisToDict
-from .models import build
+from core import DockerImage
+from .models import build, image_id
 
 api = Namespace('views', description='route of the api', path="/")
 client = DockerImage()
@@ -16,5 +15,18 @@ class deployment(Resource):
     def post(self):
         """docker build"""
         data = request.get_json()
-        res = client.clone(data.get('repository_URL'), data.get('image_tag'), data.get('config_file_path'))
-        return {"image": res[0].tags}, 200
+        path = data.get('config_file_path')
+        if not path:
+            path = "."
+        code, image = client.build(data.get('repository_URL'), data.get('image_tag'), path)
+        if code == "0":
+            return {'image': image.id}, 200
+        else:
+            return {'code': code}, 400
+
+    @api.expect(image_id)
+    def delete(self):
+        """docker rmi"""
+        data = request.get_json()
+        client.delete(data.get('id'))
+        return {}, 200

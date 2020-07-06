@@ -23,6 +23,6 @@ def init(logger, service):
 def getService(serviceName):
     r = requests.get('http://' + registerAddress + ':5000/address/'+serviceName)
     if r.status_code == 200:
-        return r.json()
+        return "0", r.json()['address']
     else:
-        return {'error': r.status_code}
+        return "01001", r.status_code

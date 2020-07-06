@@ -10,3 +10,5 @@ deploy:
   card: 1
 image:
   card: 1
+project:
+  card: 1

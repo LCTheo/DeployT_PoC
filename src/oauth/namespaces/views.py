@@ -57,4 +57,4 @@ class access_token(Resource):
             else:
                 return {'expires': True}, 200
         else:
-            return {}, 401
+            return {}, 404
