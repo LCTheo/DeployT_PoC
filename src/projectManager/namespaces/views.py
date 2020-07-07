@@ -2,7 +2,7 @@ from flask import request
 from flask_restx import Namespace, Resource
 
 from core.projects import deleteContainer
-from .models import project_setting, Project, User, dockerfile_setting, getID, container, getProjectSpec
+from .models import project_setting, Project, User, dockerfile_setting, getID, container, ProjectID
 from core import addContainer, getProjectId, deleteProject
 
 api = Namespace('views', description='route of the api', path="/")
@@ -19,11 +19,15 @@ class Create(Resource):
         project.save()
         return {'projectid': str(project.id)}, 200
 
-    @api.expect(project_setting)
+    @api.expect(ProjectID)
     def delete(self):
         data = request.get_json()
-        deleteProject(data.get('projectId'))
-        return {'state': 'done'}, 200
+        rep = deleteProject(data.get('projectId'))
+        if rep == "0":
+            return {'state': "done"}, 200
+        else:
+            return {'state': "fail", "code": rep}, 400
+
 
 @api.route("/container/<string:projectId>/dockerfile")
 class Container(Resource):
@@ -50,13 +54,13 @@ class ProjectID(Resource):
         if projectId:
             return {'project_id': projectId}, 200
         else:
-            return {'code': "03001"}, 400
+            return {'code': "04001"}, 400
 
 
 @api.route("/<string:projectId>")
 class ManageContainer(Resource):
 
-    @api.expect(getProjectSpec)
+    @api.expect(container)
     def get(self):
         """get container Spec"""
         return {}, 200
@@ -64,5 +68,8 @@ class ManageContainer(Resource):
     @api.expect(container)
     def delete(self, projectId):
         data = request.get_json()
-        deleteContainer(projectId, data.get('container_name'))
-
+        res = deleteContainer(projectId, data.get('container_name'))
+        if res == "0":
+            return {}, 200
+        else:
+            return {'code': res}, 400

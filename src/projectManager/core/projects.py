@@ -9,7 +9,7 @@ def addContainer(projectId, name, repository_URL, repo_visibility, config_file_p
     project = Project.objects(id=projectId).first()
     if project:
         if name in project.containers:
-            return "03003"
+            return "04004"
         imageTag = projectId + '-' + name + ':latest'
         code, deployAddress = core.getService("deploy")
         if code == "0":
@@ -39,10 +39,11 @@ def addContainer(projectId, name, repository_URL, repo_visibility, config_file_p
                                   config_file_path=config_file_path)
                     image.save()
                     if exposedPort:
-                        container = Container(imageId=imageID, environment=environment, network=networks,
-                                              exposedPort=exposedPort)
+                        container = Container(containerId=projectId + '-' + name, imageId=imageID, environment=environment,
+                                              network=networks, exposedPort=exposedPort)
                     else:
-                        container = Container(imageId=imageID, environment=environment, network=networks)
+                        container = Container(containerId=projectId + '-' + name, imageId=imageID, environment=environment,
+                                              network=networks)
 
                     project.containers[name] = container
                     project.save()
@@ -56,25 +57,76 @@ def addContainer(projectId, name, repository_URL, repo_visibility, config_file_p
                               'environment': environment,
                               'network': netid})
                     if responseDep.status_code == 200:
+                        project.containers[name].status = 'running'
+                        project.save()
                         return "0"
                     else:
-                        return "03X" + responseDep.json()['code']
+                        return "02X" + responseDep.json()['code']
                 else:
-                    return "04X" + response.json()['code']
+                    return "03X" + response.json()['code']
             else:
                 return "01001"
         else:
             return "01001"
     else:
-        return "03001"
+        return "04001"
 
 
-def deleteProject(projectID):
-    return 0
+def deleteProject(projectId):
+    project = Project.objects(id=projectId).first()
+    for name in project.containers.key:
+        res = deleteContainer(projectId, name)
+        if res != "0":
+            return res
+    project.delete()
+    return "0"
 
 
-def deleteContainer(projectID, containerName):
-    return 0
+def deleteContainer(projectId, containerName):
+    project = Project.objects(id=projectId).first()
+    if project:
+        container = project.containers[containerName]
+        if container:
+            code, deployAddress = core.getService("deploy")
+            if code == "0":
+                responseDep = requests.delete('http://' + deployAddress + ':5000/manage/' + container.containerId)
+                if responseDep.status_code == 200:
+                    code, imageAddress = core.getService("image")
+                    if code == "0":
+                        response = requests.delete(
+                            'http://' + imageAddress + ':5000/image/build',
+                            json={'id': container.imageId})
+                        if response.status_code == 200:
+                            image = Image.objects(imageId=container.imageId).first()
+                            image.delete()
+                            networks = []
+                            for network in container.network:
+                                networks.append(network)
+                            for network in container.network:
+                                for key, cont in project.containers.items():
+                                    if key != containerName:
+                                        if network in cont.network:
+                                            networks.remove(network)
+                            for network in networks:
+                                responseDep = requests.delete(
+                                    'http://' + deployAddress + ':5000/network/' + project.networks[network].networkId)
+                                project.update(**{'unset__networks__' + network: 1})
+
+                            project.update(**{'unset__containers__' + containerName: 1})
+                            project.save()
+                            return "0"
+                        else:
+                            return "04X" + responseDep.json()['code']
+                    else:
+                        return "01001"
+                else:
+                    return "02X" + responseDep.json()['code']
+            else:
+                return "01001"
+        else:
+            return "04003"
+    else:
+        return "04001"
 
 
 def getProjectId(name, owner):

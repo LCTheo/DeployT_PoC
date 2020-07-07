@@ -59,7 +59,7 @@ class manage(Resource):
 
     def get(self, networkId):
         """get network data"""
-        res = client.createNetwork(networkId)
+        res = client.getNetwork(networkId)
         if res == "0":
             return {}, 200
         else:

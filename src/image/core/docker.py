@@ -19,15 +19,15 @@ class DockerImage:
             d.cleanup()
             return "0", res[0]
         except docker.errors.APIError:
-            return "04001", None
+            return "03001", None
         except docker.errors.BuildError:
-            return "04002", None
+            return "03002", None
         except TypeError:
-            return "04003", None
+            return "03003", None
 
     def delete(self, imageId):
         try:
             self.client.images.remove(image=imageId)
             return "0"
         except docker.errors.APIError:
-            return "04001"
+            return "03001"

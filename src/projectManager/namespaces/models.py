@@ -8,7 +8,7 @@ TYPE = ('small', 'medium', 'big')
 
 REPO_TYPE = ['private', 'public']
 
-STATUS = ('running', 'stop', 'partial')
+STATUS = ('running', 'stopped')
 
 
 # from registration .models
@@ -28,10 +28,12 @@ class Image(me.Document):
 
 
 class Container(me.EmbeddedDocument):
-    imageId = me.ReferenceField(Image, required=True)
+    containerId = me.StringField(required=True, unique=True)
+    imageId = me.StringField(required=True)
     environment = me.ListField(me.StringField())
     network = me.ListField(me.StringField())
     exposedPort = me.ListField(me.IntField())
+    status = me.StringField(required=True, choices=STATUS, default='stopped')
 
 
 class Network(me.EmbeddedDocument):
@@ -44,7 +46,6 @@ class Project(me.Document):
     type = me.StringField(required=True, choices=TYPE)
     containers = me.MapField(me.EmbeddedDocumentField(Container))
     networks = me.MapField(me.EmbeddedDocumentField(Network))
-    status = me.StringField(required=True, choices=STATUS, default='stop')
 
 
 project_setting = api.model('project setting', {
@@ -76,10 +77,6 @@ ProjectID = api.model('project ID', {
 
 container = api.model('container name', {
     'container_name': fields.String(required=True)
-})
-
-getProjectSpec = api.model('getProjectSpec', {
-    'container_name': fields.List(fields.String())
 })
 
 

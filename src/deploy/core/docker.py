@@ -65,9 +65,9 @@ class DockerContainer:
             network = self.client.networks.get(networkId)
             return "0", network
         except docker.errors.APIError:
-            return "02006", None
-        except docker.errors.NotFound:
             return "02001", None
+        except docker.errors.NotFound:
+            return "02006", None
 
     def deleteNetwork(self, networkId):
         try:
@@ -75,4 +75,4 @@ class DockerContainer:
             network[1].remove()
             return "0"
         except docker.errors.APIError:
-            return "02006"
+            return "02001"
