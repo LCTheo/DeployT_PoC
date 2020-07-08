@@ -48,6 +48,7 @@ containerId = api.inherit('container Id', token_model, {
 })
 
 manage_project = api.inherit('manage project', token_model, {
+    'project_name': fields.String(required=True),
     'action': fields.String(required=True, enum=['start', 'stop', 'restart']),
     'container_list': fields.List(fields.String)
 })

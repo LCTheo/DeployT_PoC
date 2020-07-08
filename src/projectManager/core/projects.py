@@ -1,3 +1,5 @@
+from typing import List
+
 import requests
 
 import core
@@ -39,10 +41,12 @@ def addContainer(projectId, name, repository_URL, repo_visibility, config_file_p
                                   config_file_path=config_file_path)
                     image.save()
                     if exposedPort:
-                        container = Container(containerId=projectId + '-' + name, imageId=imageID, environment=environment,
+                        container = Container(containerId=projectId + '-' + name, imageId=imageID,
+                                              environment=environment,
                                               network=networks, exposedPort=exposedPort)
                     else:
-                        container = Container(containerId=projectId + '-' + name, imageId=imageID, environment=environment,
+                        container = Container(containerId=projectId + '-' + name, imageId=imageID,
+                                              environment=environment,
                                               network=networks)
 
                     project.containers[name] = container
@@ -135,3 +139,41 @@ def getProjectId(name, owner):
         return str(project.id)
     else:
         return None
+
+
+def containerStatus(projectId: str, containers: List[str], action: str):
+    project = Project.objects(id=projectId).first()
+    if project:
+        code, deployAddress = core.getService("deploy")
+        if code == "0":
+            if len(containers) == 0:
+                for key in project.containers:
+                    containers.append(key)
+            for containerName in containers:
+                container = project.containers[containerName]
+                if container:
+                    if action == "start":
+                        if container.status == "stopped":
+                            response = requests.post(
+                                'http://' + deployAddress + ':5000/deployment/' + container.imageId,
+                                json={'name': container.containerId,
+                                      'hostname': containerName,
+                                      'environment': container.environment,
+                                      'network': container.network})
+                            if response.status_code == 200:
+                                container.status = 'running'
+                            else:
+                                return "02X" + response.json()['code']
+                    elif action == "stop":
+                        if container.status == "running":
+                            response = requests.delete('http://' + deployAddress + ':5000/manage/' + container.containerId)
+                            if response.status_code == 200:
+                                container.status = 'stopped'
+                    else:
+                        return "03005"
+                    project.save()
+        else:
+            return "01001"
+    else:
+        return "03001"
+    return "0"

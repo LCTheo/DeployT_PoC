@@ -1,8 +1,8 @@
 from flask import request
 from flask_restx import Namespace, Resource
 
-from core.projects import deleteContainer
-from .models import project_setting, Project, User, dockerfile_setting, getID, container, ProjectID
+from core.projects import deleteContainer, containerStatus
+from .models import project_setting, Project, User, dockerfile_setting, getID, container, ProjectID, manage_project
 from core import addContainer, getProjectId, deleteProject
 
 api = Namespace('views', description='route of the api', path="/")
@@ -30,7 +30,7 @@ class Create(Resource):
 
 
 @api.route("/container/<string:projectId>/dockerfile")
-class Container(Resource):
+class Dockerfile(Resource):
 
     @api.expect(dockerfile_setting)
     def post(self, projectId):
@@ -42,6 +42,14 @@ class Container(Resource):
             return {'state': "done"}, 200
         else:
             return {'state': "fail", "code": rep}, 400
+
+
+@api.route("/container/<string:projectId>/compose")
+class Compose(Resource):
+
+    @api.expect(dockerfile_setting)
+    def post(self, projectId):
+        data = request.get_json()
 
 
 @api.route("/getID")
@@ -69,6 +77,16 @@ class ManageContainer(Resource):
     def delete(self, projectId):
         data = request.get_json()
         res = deleteContainer(projectId, data.get('container_name'))
+        if res == "0":
+            return {}, 200
+        else:
+            return {'code': res}, 400
+
+    @api.expect(manage_project)
+    def post(self, projectId):
+        """start, stop project"""
+        data = request.get_json()
+        res = containerStatus(projectId, data.get('container_list'), data.get('action'))
         if res == "0":
             return {}, 200
         else:

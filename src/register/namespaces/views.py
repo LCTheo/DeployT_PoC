@@ -57,6 +57,6 @@ class getaddress(Resource):
                 address = services[service]['address'][0]
                 return {'address': address}, 200
             else:
-                return {}, 204
+                return {}, 400
         else:
             return {}, 404

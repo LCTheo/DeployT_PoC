@@ -34,16 +34,11 @@ class manage(Resource):
 
     def get(self, container):
         """get container data"""
-        container = client.getContainer(container)
-        if container[0] == "0":
-            return container[1].labels, 200
+        code, container = client.getContainer(container)
+        if code == "0":
+            return container.labels, 200
         else:
-            return {'code': container[0]}, 400
-
-    @api.expect(options)
-    def put(self, container):
-        """restart container"""
-        return {}, 200
+            return {'code': code}, 400
 
     def delete(self, container):
         """docker rm"""
