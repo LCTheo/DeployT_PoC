@@ -66,6 +66,13 @@ dockerfile_setting = api.model('dockerfile setting', {
 
 })
 
+compose_setting = api.model('compose setting', {
+    'name': fields.String(required=True),
+    'repository_URL': fields.String(required=True),
+    'repo_visibility': fields.String(required=True, enum=['public', 'private']),
+    'config_file_path': fields.String(required=True, default=".", example="."),
+   })
+
 getID = api.model('get project ID', {
     'project_name': fields.String(required=True),
     'owner': fields.String(required=True)
@@ -79,5 +86,8 @@ container = api.model('container name', {
     'container_name': fields.String(required=True)
 })
 
-
+manage_project = api.model('manage project', {
+    'action': fields.String(required=True, enum=['start', 'stop']),
+    'container_list': fields.List(fields.String)
+})
 

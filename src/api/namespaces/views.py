@@ -130,10 +130,11 @@ class setting(Resource):
 
 @api.route("/api/project/create")
 class createProject(Resource):
-    """create project"""
+
 
     @api.expect(project_setting)
     def post(self):
+        """create project"""
         data = request.get_json()
         address = getService("oauth")
         if address[0] == "0":
@@ -150,50 +151,46 @@ class createProject(Resource):
                     if response.status_code == 200:
                         return {'state': "done", 'projectId': response.json()['projectid']}
                     else:
-                        return {'error': "06X"+str(response.status_code)}, 400
+                        return {'error': "06X" + str(response.status_code)}, 400
             else:
                 return {}, 401
         else:
             return {}, 400
 
 
-@api.route("/api/project/<string:projectId>")
+@api.route("/api/project/<string:projectName>")
 class manageProject(Resource):
-    """delete project"""
 
     @api.expect(token_model)
-    def delete(self, projectId):
+    def delete(self, projectName):
+        """delete project"""
         return {}, 200
-
-    """get project container"""
 
     @api.expect(token_model)
-    def get(self, projectId):
+    def get(self, projectName):
+        """get project container"""
         return {}, 200
-
-    """start, stop or restart project"""
 
     @api.expect(manage_project)
-    def post(self, projectId):
+    def post(self, projectName):
+        """start, stop project"""
         return {}, 200
 
 
-@api.route("/api/project/<string:projectId>/container")
+@api.route("/api/project/<string:projectName>/container")
 class manageContainer(Resource):
-    """add container"""
 
     @api.expect(container_setting)
-    def post(self, projectId):
+    def post(self, projectName):
+        """add container"""
         return {}, 200
 
-    """delete container"""
-
     @api.expect(containerId)
-    def delete(self, projectId):
+    def delete(self, projectName):
+        """delete container"""
         return {}, 200
 
-    """get container info"""
-
     @api.expect(containerId)
-    def get(self, projectId):
+    def get(self, projectName):
+        """get container info"""
         return {}, 200
