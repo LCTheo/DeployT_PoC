@@ -13,9 +13,13 @@ class DockerImage:
     def build(self, repo, tag, dockerfilePath) -> (str, Image):
         d = tempfile.TemporaryDirectory(dir="/tmp")
         Repo.clone_from(repo, d.name)
+        if dockerfilePath == '.':
+            context = d.name
+        else:
+            context = d.name + "/" + dockerfilePath
         try:
-            res = self.client.images.build(path=d.name, tag=tag, rm=True, nocache=True,
-                                           dockerfile=dockerfilePath + "/Dockerfile")
+            res = self.client.images.build(path=context, tag=tag, rm=True, nocache=True,
+                                           dockerfile="./Dockerfile")
             d.cleanup()
             return "0", res[0]
         except docker.errors.APIError:

@@ -1,7 +1,6 @@
 from flask_restx import fields, Namespace
 import mongoengine as me
 
-
 api = Namespace('models', description='all models used')
 
 TYPE = ('small', 'medium', 'big')
@@ -21,9 +20,9 @@ class User(me.Document):
 class Image(me.Document):
     imageId = me.StringField(primary_key=True, required=True)
     owner = me.ReferenceField(User, required=True)
-    repository_url = me.URLField(required=True)
+    repository_url = me.StringField(required=True)
     repository_type = me.StringField(required=True, choices=REPO_TYPE)
-    image_tag = me.StringField(required=True)
+    image_tag = me.StringField(unique=True, required=True)
     config_file_path = me.StringField(required=True)
 
 
@@ -67,11 +66,10 @@ dockerfile_setting = api.model('dockerfile setting', {
 })
 
 compose_setting = api.model('compose setting', {
-    'name': fields.String(required=True),
     'repository_URL': fields.String(required=True),
     'repo_visibility': fields.String(required=True, enum=['public', 'private']),
     'config_file_path': fields.String(required=True, default=".", example="."),
-   })
+})
 
 getID = api.model('get project ID', {
     'project_name': fields.String(required=True),
@@ -82,12 +80,10 @@ ProjectID = api.model('project ID', {
     'projectId': fields.String(required=True)
 })
 
-container = api.model('container name', {
-    'container_name': fields.String(required=True)
-})
-
-manage_project = api.model('manage project', {
-    'action': fields.String(required=True, enum=['start', 'stop']),
+container = api.model('container list', {
     'container_list': fields.List(fields.String)
 })
 
+manage_project = api.inherit('manage project', container, {
+    'action': fields.String(required=True, enum=['start', 'stop']),
+})

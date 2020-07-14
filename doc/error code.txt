@@ -32,6 +32,8 @@ liste 00 000:
 	003: container not found	
 	004: container already exist
 	005: wrong action
+	006: repo don't exist
+	007: unknow image
 
 
 	

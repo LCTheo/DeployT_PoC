@@ -13,9 +13,9 @@ api = Namespace('views', description='route of the api', path="/")
 class status(Resource):
 
     def get(self):
-        address = getService("register")
-        if address[0] == "0":
-            response = requests.get('http://' + address[1] + ':5000/status')
+        code, address = getService("register")
+        if code == "0":
+            response = requests.get('http://' + address + ':5000/status')
             r = response.json()
             return r, 200
         else:
@@ -28,9 +28,9 @@ class user_registration(Resource):
     @api.expect(user_definition)
     def post(self):
         data = request.get_json()
-        address = getService("registration")
-        if address[0] == "0":
-            response = requests.post('http://' + address[1] + ':5000/registration/user',
+        code, address = getService("registration")
+        if code == "0":
+            response = requests.post('http://' + address + ':5000/registration/user',
                                      json={'username': data.get('username'),
                                            'password': data.get(
                                                'password')})
@@ -44,15 +44,15 @@ class user_registration(Resource):
     @api.expect(delete_model)
     def delete(self):
         data = request.get_json()
-        address = getService("oauth")
-        if address[0] == "0":
-            validation = requests.get('http://' + address[1] + ':5000/validate',
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
                                       json={'token': data.get('token'),
                                             'username': data.get('username')})
             if validation.status_code == 200:
-                address = getService("registration")
-                if address[0] == "0":
-                    response = requests.delete('http://' + address[1] + ':5000/registration/user',
+                code, address = getService("registration")
+                if code == "0":
+                    response = requests.delete('http://' + address + ':5000/registration/user',
                                                json={'token': data.get('token')})
                     if response.status_code == 200:
                         return response.json(), 200
@@ -70,11 +70,11 @@ class signin(Resource):
     @api.expect(user_definition)
     def post(self):
         data = request.get_json()
-        address = getService("oauth")
-        if address[0] == "0":
-            response = requests.post('http://' + address[1] + ':5000/signin', json={'username': data.get('username'),
-                                                                                    'password': data.get(
-                                                                                        'password')})
+        code, address = getService("oauth")
+        if code == "0":
+            response = requests.post('http://' + address + ':5000/signin', json={'username': data.get('username'),
+                                                                                 'password': data.get(
+                                                                                     'password')})
             if response.status_code == 200:
                 return response.json(), 200
             else:
@@ -89,9 +89,9 @@ class signout(Resource):
     @api.expect(token_model)
     def post(self):
         data = request.get_json()
-        address = getService("oauth")
-        if address[0] == "0":
-            response = requests.post('http://' + address[1] + ':5000/signout',
+        code, address = getService("oauth")
+        if code == "0":
+            response = requests.post('http://' + address + ':5000/signout',
                                      json={'token': data.get('token')})
             if response.status_code == 200:
                 return response.json(), 200
@@ -107,16 +107,16 @@ class setting(Resource):
     @api.expect(setting_model)
     def put(self):
         data = request.get_json()
-        address = getService("oauth")
-        if address[0] == "0":
-            validation = requests.get('http://' + address[1] + ':5000/validate',
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
                                       json={'token': data.get('token'),
                                             'username': data.get('username')})
             if validation.status_code == 200:
-                address = getService("registration")
-                if address[0] == "0":
+                code, address = getService("registration")
+                if code == "0":
                     response = requests.post(
-                        'http://' + address[1] + ':5000/userInfo/' + data.get('username') + '/'
+                        'http://' + address + ':5000/userInfo/' + data.get('username') + '/'
                         + data.get('field_name'), json={'new_value': data.get('new_value')})
                     if response.status_code == 200:
                         return {'state': "done"}
@@ -131,27 +131,26 @@ class setting(Resource):
 @api.route("/api/project/create")
 class createProject(Resource):
 
-
     @api.expect(project_setting)
     def post(self):
         """create project"""
         data = request.get_json()
-        address = getService("oauth")
-        if address[0] == "0":
-            validation = requests.get('http://' + address[1] + ':5000/validate',
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
                                       json={'token': data.get('token'),
                                             'username': data.get('username')})
             if validation.status_code == 200:
-                address = getService("project")
-                if address[0] == "0":
+                code, address = getService("project")
+                if code == "0":
                     response = requests.post(
-                        'http://' + address[1] + ':5000/project',
+                        'http://' + address + ':5000/project',
                         json={'project_name': data.get('project_name'), 'owner': data.get('username'),
                               'project_type': data.get('project_type')})
                     if response.status_code == 200:
                         return {'state': "done", 'projectId': response.json()['projectid']}
                     else:
-                        return {'error': "06X" + str(response.status_code)}, 400
+                        return {'error': "04X" + str(response.status_code)}, 400
             else:
                 return {}, 401
         else:
@@ -164,7 +163,31 @@ class manageProject(Resource):
     @api.expect(token_model)
     def delete(self, projectName):
         """delete project"""
-        return {}, 200
+        data = request.get_json()
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
+                                      json={'token': data.get('token'),
+                                            'username': data.get('username')})
+            if validation.status_code == 200:
+                code, address = getService("project")
+                if code == "0":
+                    responseID = requests.delete('http://' + address + ':5000/getID',
+                                                 json={'project_name': projectName,
+                                                       'owner': data.get('username')})
+                    if responseID.status_code == 200:
+                        response = requests.delete('http://' + address + ':5000/project',
+                                                   json={'projectId': responseID.json()['project_id']})
+                        if response.status_code == 200:
+                            return {'state': "done"}
+                        elif response.status_code == 400:
+                            return {'error': "04X" + response.json()['code']}, 400
+                        else:
+                            return {'error': "04X500"}, 400
+                else:
+                    return {}, 401
+            else:
+                return {}, 400
 
     @api.expect(token_model)
     def get(self, projectName):
