@@ -1,6 +1,7 @@
 from flask_restx import fields, Namespace
 import mongoengine as me
 
+
 api = Namespace('models', description='all models used')
 
 TYPE = ('small', 'medium', 'big')
@@ -20,9 +21,9 @@ class User(me.Document):
 class Image(me.Document):
     imageId = me.StringField(primary_key=True, required=True)
     owner = me.ReferenceField(User, required=True)
-    repository_url = me.StringField(required=True)
+    repository_url = me.URLField(required=True)
     repository_type = me.StringField(required=True, choices=REPO_TYPE)
-    image_tag = me.StringField(unique=True, required=True)
+    image_tag = me.StringField(required=True)
     config_file_path = me.StringField(required=True)
 
 
@@ -80,8 +81,8 @@ ProjectID = api.model('project ID', {
     'projectId': fields.String(required=True)
 })
 
-container = api.model('container list', {
-    'container_list': fields.List(fields.String)
+container = api.model('container name', {
+    'container_name': fields.String(required=True)
 })
 
 manage_project = api.inherit('manage project', container, {
