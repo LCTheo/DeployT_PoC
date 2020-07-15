@@ -36,6 +36,22 @@ def addImage(projectId, name, repository_URL, repo_visibility, config_file_path)
         return "01001", ""
 
 
+def addPublicImage(imageTag):
+    code, imageAddress = core.getService("image")
+    if code == "0":
+        response = requests.post('http://' + imageAddress + ':5000/image/pull',
+                                 json={'image_tag': imageTag})
+        if response.status_code == 200:
+            imageID = response.json().get('image')
+            image = Image(imageId=imageID, image_tag=imageTag)
+            image.save()
+            return "0", imageID
+        else:
+            return "03X" + response.json()['code'], ""
+    else:
+        return "01001", ""
+
+
 def addContainer(projectId, name, imageId, environment, networks, exposedPort=None):
     project = Project.objects(id=projectId).first()
     image = Image.objects(imageId=imageId).first()
@@ -103,33 +119,33 @@ def deleteContainer(projectId, containers):
                                                    json={'id': container.imageId})
                         if response.status_code == 200:
                             image = Image.objects(imageId=container.imageId).first()
-                            image.delete()
-                            networks = []
-                            for network in container.network:
-                                networks.append(network)
-                            for network in container.network:
-                                for key, cont in project.containers.items():
-                                    if key != containerName:
-                                        if network in cont.network:
-                                            networks.remove(network)
-                            for network in networks:
-                                requests.delete(
-                                    'http://' + deployAddress + ':5000/network/' + project.networks[network].networkId)
-                                project.update(**{'unset__networks__' + network: 1})
 
                             project.update(**{'unset__containers__' + containerName: 1})
+                            if image.owner is not None:
+                                image.delete()
                             project.save()
-                            return "0"
                         else:
                             return "04X" + response.json()['code']
                     else:
                         return "01001"
                 else:
                     return "04003"
+            project.reload()
+            networks = []
+            for network in project.networks:
+                networks.append(network)
+            for network in project.networks:
+                for key, cont in project.containers.items():
+                    if network in cont.network and network in networks:
+                        networks.remove(network)
+            for network in networks:
+                requests.delete('http://' + deployAddress + ':5000/network/' + project.networks[network].networkId)
+                project.update(**{'unset__networks__' + network: 1})
         else:
             return "01001"
     else:
         return "04001"
+    return "0"
 
 
 def getProjectId(name, owner):
@@ -206,7 +222,7 @@ def extractConfig(repository_URL, repo_visibility, config_file_path) -> [str, Di
         return "0", config
 
 
-def redactContainer(config: Dict, projectId, configType, repo_URL=None, logger=None) -> [str, List]:
+def redactContainer(config: Dict, projectId, configType, repo_URL=None) -> [str, List]:
     containerList = []
     if 'networks' in config:
         defaultNetwork = False
@@ -214,7 +230,6 @@ def redactContainer(config: Dict, projectId, configType, repo_URL=None, logger=N
         defaultNetwork = True
     for key in config['services']:
         container = config['services'][key]
-        logger.error(container)
         setting = [key]
         if 'image' in container:
             if type(container['image']) is str:
@@ -244,23 +259,24 @@ def redactContainer(config: Dict, projectId, configType, repo_URL=None, logger=N
             elif type(container['environment']) is list:
                 setting.append(container['environment'])
             else:
-                logger.error('environment List ')
+
                 setting.append([])
         else:
-            logger.error('environment')
             setting.append([])
 
         if 'networks' in container:
-            if defaultNetwork:
-                setting.append(['default'])
-            elif type(container['networks']) is list:
+            if type(container['networks']) is list:
                 setting.append(container['networks'])
             else:
-                logger.error('networks List ')
-                setting.append([])
+                if defaultNetwork:
+                    setting.append(['default'])
+                else:
+                    setting.append([])
         else:
-            logger.error('networks')
-            setting.append([])
+            if defaultNetwork:
+                setting.append(['default'])
+            else:
+                setting.append([])
 
         if 'ports' in container:
             if type(container['ports']) is list:
@@ -270,15 +286,12 @@ def redactContainer(config: Dict, projectId, configType, repo_URL=None, logger=N
                     ports.append(inter)
                 setting.append(ports)
             else:
-                logger.error('ports List ')
                 setting.append([])
         else:
-            logger.error('ports')
             setting.append([])
 
         containerList.append(setting)
     for containerConfig in containerList:
-        logger.error(containerConfig)
         if type(containerConfig[1]) is list:
             if configType == "compose":
                 code, image = addImage(projectId, containerConfig[0], repo_URL, "public", containerConfig[1][0])
@@ -290,8 +303,15 @@ def redactContainer(config: Dict, projectId, configType, repo_URL=None, logger=N
                 else:
                     return code
         else:
-            rep = addContainer(projectId, containerConfig[0], containerConfig[1], containerConfig[2],
-                               containerConfig[3],
-                               containerConfig[4])
+            image = Image.objects(image_tag=containerConfig[1], owner=None).first()
+            if image:
+                imageId = image.imageId
+            else:
+                code, imageId = addPublicImage(containerConfig[1])
+                if code != "0":
+                    return code
+            rep = addContainer(projectId, containerConfig[0], imageId, containerConfig[2],
+                               containerConfig[3], containerConfig[4])
             if rep != "0":
                 return rep
+    return "0"

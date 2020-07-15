@@ -15,3 +15,7 @@ build = api.model('build parameter', {
 image_id = api.model('image id', {
     'id': fields.String(required=True)
 })
+
+image_tag = api.model('image tag', {
+    'image_tag': fields.String(required=True)
+})
