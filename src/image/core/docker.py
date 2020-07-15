@@ -35,3 +35,10 @@ class DockerImage:
             return "0"
         except docker.errors.APIError:
             return "03001"
+
+    def pull(self, name) -> (str, Image):
+        try:
+            image = self.client.images.pull(name)
+            return "0", image.id
+        except docker.errors.APIError:
+            return "03001", None

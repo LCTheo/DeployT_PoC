@@ -57,7 +57,7 @@ class Compose(Resource):
         code, config = extractConfig(data.get('repository_URL'), data.get('repo_visibility'),
                                      data.get('config_file_path'))
         if code == "0":
-            rep = redactContainer(config, projectId, "compose", data.get('repository_URL'), api.logger)
+            rep = redactContainer(config, projectId, "compose", data.get('repository_URL'))
             if rep == "0":
                 return {'state': "done"}, 200
             else:
@@ -91,7 +91,7 @@ class ManageContainer(Resource):
     def delete(self, projectId):
         """delete containers"""
         data = request.get_json()
-        res = deleteContainer(projectId, data.get('container_list'))
+        res = deleteContainer(projectId, data.get('container_list'), api.logger)
         if res == "0":
             return {}, 200
         else:

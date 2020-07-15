@@ -20,11 +20,11 @@ class User(me.Document):
 
 class Image(me.Document):
     imageId = me.StringField(primary_key=True, required=True)
-    owner = me.ReferenceField(User, required=True)
-    repository_url = me.URLField(required=True)
-    repository_type = me.StringField(required=True, choices=REPO_TYPE)
     image_tag = me.StringField(required=True)
-    config_file_path = me.StringField(required=True)
+    owner = me.ReferenceField(User)
+    repository_url = me.StringField()
+    repository_type = me.StringField(choices=REPO_TYPE)
+    config_file_path = me.StringField()
 
 
 class Container(me.EmbeddedDocument):
@@ -81,8 +81,8 @@ ProjectID = api.model('project ID', {
     'projectId': fields.String(required=True)
 })
 
-container = api.model('container name', {
-    'container_name': fields.String(required=True)
+container = api.model('container list', {
+    'container_list': fields.List(fields.String, required=True)
 })
 
 manage_project = api.inherit('manage project', container, {
