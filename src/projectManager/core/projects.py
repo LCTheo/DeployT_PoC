@@ -7,7 +7,7 @@ from git import Repo
 import requests
 
 import core
-from namespaces.models import Project, Image, Container, Network
+from namespaces.models import Project, Image, Container, Network, User
 
 
 def addImage(projectId, name, repository_URL, repo_visibility, config_file_path) -> [str, str]:
@@ -89,10 +89,9 @@ def addContainer(projectId, name, imageId, environment, networks, exposedPort=No
 
 def deleteProject(projectId):
     project = Project.objects(id=projectId).first()
-    for name in project.containers.key:
-        res = deleteContainer(projectId, name)
-        if res != "0":
-            return res
+    res = deleteContainer(projectId, [])
+    if res != "0":
+        return res
     project.delete()
     return "0"
 
@@ -149,9 +148,13 @@ def deleteContainer(projectId, containers):
 
 
 def getProjectId(name, owner):
-    project = Project.objects(name=name, owner=owner).first()
-    if project:
-        return str(project.id)
+    user = User.objects(username=owner).first()
+    if user:
+        project = Project.objects(name=name, owner=user.id).first()
+        if project:
+            return str(project.id)
+        else:
+            return None
     else:
         return None
 

@@ -6,7 +6,7 @@ api = Namespace('models', description='all models used')
 
 TYPE = ('small', 'medium', 'big')
 
-REPO_TYPE = ['private', 'public']
+REPO_TYPE = ['public', 'private']
 
 STATUS = ('running', 'stopped')
 
@@ -57,7 +57,7 @@ project_setting = api.model('project setting', {
 dockerfile_setting = api.model('dockerfile setting', {
     'name': fields.String(required=True),
     'repository_URL': fields.String(required=True),
-    'repo_visibility': fields.String(required=True, enum=['public', 'private']),
+    'repo_visibility': fields.String(required=True, enum=REPO_TYPE),
     'config_file_path': fields.String(required=True, default=".", example="."),
 
     'environment': fields.List(fields.String(required=True, pattern="[A-Z0-9-_]+=[a-zA-Z0-9-_]+", example="KEY=value")),
@@ -68,7 +68,7 @@ dockerfile_setting = api.model('dockerfile setting', {
 
 compose_setting = api.model('compose setting', {
     'repository_URL': fields.String(required=True),
-    'repo_visibility': fields.String(required=True, enum=['public', 'private']),
+    'repo_visibility': fields.String(required=True, enum=REPO_TYPE),
     'config_file_path': fields.String(required=True, default=".", example="."),
 })
 

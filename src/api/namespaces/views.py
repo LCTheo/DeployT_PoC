@@ -3,7 +3,7 @@ from flask_restx import Namespace, Resource
 
 import requests
 from .models import user_definition, delete_model, token_model, setting_model, project_setting, container_setting, \
-    containerId, manage_project
+    manage_project, container_list
 from core import getService
 
 api = Namespace('views', description='route of the api', path="/")
@@ -58,10 +58,12 @@ class user_registration(Resource):
                         return response.json(), 200
                     else:
                         return {}, response.status_code
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
             else:
-                return
+                return {}, 404
         else:
-            return {}, 400
+            return {}, 401
 
 
 @api.route("/api/signin")
@@ -122,10 +124,12 @@ class setting(Resource):
                         return {'state': "done"}
                     else:
                         return {'error': "unknown"}, 400
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
             else:
-                return {}, 401
+                return {}, 404
         else:
-            return {}, 400
+            return {}, 401
 
 
 @api.route("/api/project/create")
@@ -151,10 +155,12 @@ class createProject(Resource):
                         return {'state': "done", 'projectId': response.json()['projectid']}
                     else:
                         return {'error': "04X" + str(response.status_code)}, 400
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
             else:
-                return {}, 401
+                return {}, 404
         else:
-            return {}, 400
+            return {}, 401
 
 
 @api.route("/api/project/<string:projectName>")
@@ -172,9 +178,9 @@ class manageProject(Resource):
             if validation.status_code == 200:
                 code, address = getService("project")
                 if code == "0":
-                    responseID = requests.delete('http://' + address + ':5000/getID',
-                                                 json={'project_name': projectName,
-                                                       'owner': data.get('username')})
+                    responseID = requests.get('http://' + address + ':5000/getID',
+                                              json={'project_name': projectName,
+                                                    'owner': data.get('username')})
                     if responseID.status_code == 200:
                         response = requests.delete('http://' + address + ':5000/project',
                                                    json={'projectId': responseID.json()['project_id']})
@@ -186,8 +192,12 @@ class manageProject(Resource):
                             return {'error': "04X500"}, 400
                 else:
                     return {}, 401
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
             else:
-                return {}, 400
+                return {}, 404
+        else:
+            return {}, 401
 
     @api.expect(token_model)
     def get(self, projectName):
@@ -197,7 +207,39 @@ class manageProject(Resource):
     @api.expect(manage_project)
     def post(self, projectName):
         """start, stop project"""
-        return {}, 200
+        data = request.get_json()
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
+                                      json={'token': data.get('token'),
+                                            'username': data.get('username')})
+            if validation.status_code == 200:
+                code, address = getService("project")
+                if code == "0":
+                    responseID = requests.get('http://' + address + ':5000/getID',
+                                              json={'project_name': projectName,
+                                                    'owner': data.get('username')})
+                    if responseID.status_code == 200:
+                        containers = data.get('container_list')
+                        if containers is None:
+                            containers = []
+                        response = requests.post('http://' + address + ':5000/' + responseID.json()['project_id'],
+                                                 json={'action': data.get('action'),
+                                                       'container_list': containers})
+                        if response.status_code == 200:
+                            return {'state': "done"}
+                        elif response.status_code == 400:
+                            return {'error': "04X" + response.json()['code']}, 400
+                        else:
+                            return {'error': "04X500"}, 400
+                else:
+                    return {}, 401
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
+            else:
+                return {}, 404
+        else:
+            return {}, 401
 
 
 @api.route("/api/project/<string:projectName>/container")
@@ -206,14 +248,106 @@ class manageContainer(Resource):
     @api.expect(container_setting)
     def post(self, projectName):
         """add container"""
-        return {}, 200
+        data = request.get_json()
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
+                                      json={'token': data.get('token'),
+                                            'username': data.get('username')})
+            if validation.status_code == 200:
+                code, address = getService("project")
+                if code == "0":
+                    responseID = requests.get('http://' + address + ':5000/getID',
+                                              json={'project_name': projectName,
+                                                    'owner': data.get('username')})
+                    if responseID.status_code == 200:
+                        project_id = responseID.json()['project_id']
+                        if data.get('config_type') == 'Dockerfile':
+                            if data.get('name'):
+                                environment = data.get('environment')
+                                exposedPort = data.get('exposedPort')
+                                network = data.get('network')
+                                if environment is None:
+                                    environment = []
+                                if exposedPort is None:
+                                    exposedPort = []
+                                if network is None:
+                                    network = []
+                                response = requests.post(
+                                    'http://' + address + ':5000/container/' + project_id + '/dockerfile',
+                                    json={'name': data.get('name'),
+                                          'repository_URL': data.get('repository_URL'),
+                                          'repo_visibility': data.get('repo_visibility'),
+                                          'config_file_path': data.get('config_file_path'),
+                                          'environment': environment,
+                                          'network': network,
+                                          'exposedPort': exposedPort})
 
-    @api.expect(containerId)
+                        elif data.get('config_type') == 'Compose':
+                            response = requests.post(
+                                'http://' + address + ':5000/container/' + project_id + '/compose',
+                                json={'name': data.get('name'),
+                                      'repository_URL': data.get('repository_URL'),
+                                      'repo_visibility': data.get('repo_visibility'),
+                                      'config_file_path': data.get('config_file_path')})
+                        else:
+                            return {'error': "01X001", 'parameter': 'config_type'}, 400
+
+                        if response.status_code == 200:
+                            return {'state': "done"}
+                        elif response.status_code == 400:
+                            return {'error': "04X" + response.json()['code']}, 400
+                        else:
+                            return {'error': "04X500"}, 400
+                    else:
+                        return {}, 400
+                else:
+                    return {}, 401
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
+            else:
+                return {}, 404
+        else:
+            return {}, 401
+
+    @api.expect(container_list)
     def delete(self, projectName):
         """delete container"""
-        return {}, 200
+        data = request.get_json()
+        code, address = getService("oauth")
+        if code == "0":
+            validation = requests.get('http://' + address + ':5000/validate',
+                                      json={'token': data.get('token'),
+                                            'username': data.get('username')})
+            if validation.status_code == 200:
+                code, address = getService("project")
+                if code == "0":
+                    responseID = requests.get('http://' + address + ':5000/getID',
+                                              json={'project_name': projectName,
+                                                    'owner': data.get('username')})
+                    if responseID.status_code == 200:
+                        containers = data.get('container_list')
+                        if containers is None:
+                            containers = []
+                        response = requests.delete('http://' + address + ':5000/' + responseID.json()['project_id'],
+                                                   json={'action': data.get('action'),
+                                                         'container_list': containers})
+                        if response.status_code == 200:
+                            return {'state': "done"}
+                        elif response.status_code == 400:
+                            return {'error': "04X" + response.json()['code']}, 400
+                        else:
+                            return {'error': "04X500"}, 400
+                else:
+                    return {}, 401
+            elif validation.status_code == 400:
+                return {'token': 'expired'}, 400
+            else:
+                return {}, 404
+        else:
+            return {}, 401
 
-    @api.expect(containerId)
+    @api.expect(container_list)
     def get(self, projectName):
         """get container info"""
         return {}, 200

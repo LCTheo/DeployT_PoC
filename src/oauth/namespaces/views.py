@@ -55,6 +55,7 @@ class access_token(Resource):
             if token.expires > datetime.now():
                 return {'expires': False}, 200
             else:
-                return {'expires': True}, 200
+                token.delete()
+                return {'expires': True}, 400
         else:
             return {}, 404
