@@ -23,8 +23,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.deploytapi.entrypoints=http"
       - "traefik.http.routers.deploytapi.rule=Host(`api.lcfamilly.site`)"
-      - "traefik.http.middlewares.deploytapi-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.routers.deploytapi.middlewares=deploytapi-https-redirect"
       - "traefik.http.routers.deploytapi-secure.entrypoints=https"
       - "traefik.http.routers.deploytapi-secure.rule=Host(`api.lcfamilly.site`)"
       - "traefik.http.routers.deploytapi-secure.tls=true"
