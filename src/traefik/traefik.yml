@@ -13,7 +13,6 @@ providers:
     exposedByDefault: false
 
 certificatesResolvers:
-
   caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
   myresolver:
     acme:
