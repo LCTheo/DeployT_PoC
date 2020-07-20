@@ -1,0 +1,25 @@
+api:
+  dashboard: true
+
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+
+certificatesResolvers:
+
+  caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+  myresolver:
+    acme:
+      email: "lecoz.theo@gmail.com"
+      storage: "/acme.json"
+      dnsChallenge:
+        provider: ovh
+        delayBeforeCheck: 10
+
