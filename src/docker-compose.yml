@@ -22,12 +22,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.deploytapi.rule=Host(`api.lcfamilly.site`)"
-      - "traefik.http.routers.deploytapi.entrypoints=web"
+      - "traefik.http.routers.deploytapi.entrypoints=http"
       - "traefik.http.routers.deploytapi.service=deploytapi-service"
       - "traefik.http.services.deploytapi-service.loadbalancer.server.port=5000"
 
       - "traefik.http.routers.deploytapi-https.rule=Host(`api.lcfamilly.site`)"
-      - "traefik.http.routers.deploytapi-https.entrypoints=web-secure"
+      - "traefik.http.routers.deploytapi-https.entrypoints=https"
       - "traefik.http.routers.deploytapi-https.service=deploytapi-https-service"
       - "traefik.http.services.deploytapi-https-service.loadbalancer.server.port=5000"
       - "traefik.http.routers.deploytapi-https.tls=true"

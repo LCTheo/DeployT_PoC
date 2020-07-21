@@ -7,7 +7,7 @@ from git import Repo
 import requests
 
 import core
-from namespaces.models import Project, Image, Container, Network, User
+from namespaces.models import Project, Image, Container, Network, User, EntryPoint
 
 
 def addImage(projectId, name, repository_URL, repo_visibility, config_file_path) -> [str, str]:
@@ -72,8 +72,12 @@ def addContainer(projectId, name, imageId, environment, networks, exposedPort=No
                         project.save()
 
             if exposedPort:
+                entryPoint = []
+                for port in exposedPort:
+                    dns = projectId + '-' + name + port
+                    entryPoint.append(EntryPoint(port=port, dns_prefix=dns))
                 container = Container(containerId=projectId + '-' + name, imageId=imageId, environment=environment,
-                                      network=networks, exposedPort=exposedPort)
+                                      network=networks, entryPoints=entryPoint)
             else:
                 container = Container(containerId=projectId + '-' + name, imageId=imageId, environment=environment,
                                       network=networks)
@@ -173,14 +177,19 @@ def containerStatus(projectId: str, containers: List[str], action: str):
                     if action == "start":
                         if container.status == "stopped":
                             netid = []
+                            labels = []
                             for network in container.network:
                                 netid.append(project.networks[network].networkId)
+                            if len(container.entryPoints) != 0:
+                                netid.append('proxy')
+                                labels = redactLabels(container)
                             response = requests.post(
                                 'http://' + deployAddress + ':5000/deployment/' + container.imageId,
                                 json={'name': container.containerId,
                                       'hostname': containerName,
                                       'environment': container.environment,
-                                      'network': netid})
+                                      'network': netid,
+                                      'labels': labels})
                             if response.status_code == 200:
                                 container.status = 'running'
                             else:
@@ -318,3 +327,15 @@ def redactContainer(config: Dict, projectId, configType, repo_URL=None) -> [str,
             if rep != "0":
                 return rep
     return "0"
+
+
+def redactLabels(container: Container):
+    labels = ['traefik.enable:true']
+    for entryPoint in container.entryPoints:
+        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.rule:Host(`' + entryPoint.dns_prefix +
+                                                                        '.lcfamilly.site`)')
+        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.entrypoints:http')
+        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.service:' + entryPoint.dns_prefix + '-service')
+        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '-service.loadbalancer.server.port'
+                      + str(entryPoint.port))
+    return labels

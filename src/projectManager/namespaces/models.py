@@ -27,12 +27,17 @@ class Image(me.Document):
     config_file_path = me.StringField()
 
 
+class EntryPoint(me.EmbeddedDocument):
+    port = me.IntField(required=True)
+    dns_prefix = me.StringField(required=True)
+
+
 class Container(me.EmbeddedDocument):
     containerId = me.StringField(required=True, unique=True)
     imageId = me.StringField(required=True)
     environment = me.ListField(me.StringField())
     network = me.ListField(me.StringField())
-    exposedPort = me.ListField(me.IntField())
+    entryPoints = me.ListField(me.EmbeddedDocumentField(EntryPoint))
     status = me.StringField(required=True, choices=STATUS, default='stopped')
 
 
