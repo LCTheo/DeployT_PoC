@@ -1,8 +1,7 @@
 from flask import request
 from flask_restx import Namespace, Resource
 
-from .models import project_setting, Project, User, dockerfile_setting, getID, container, ProjectID, manage_project, \
-    compose_setting
+from .models import project_setting, dockerfile_setting, getID, container, ProjectID, manage_project, compose_setting
 from core import *
 
 api = Namespace('views', description='route of the api', path="/")
@@ -54,8 +53,8 @@ class Compose(Resource):
     @api.expect(compose_setting)
     def post(self, projectId):
         data = request.get_json()
-        code, config = extractConfig(data.get('repository_URL'), data.get('repo_visibility'),
-                                     data.get('config_file_path'))
+        code, config = extractConfigFile(data.get('repository_URL'), data.get('repo_visibility'),
+                                         data.get('config_file_path'))
         if code == "0":
             rep = redactContainer(config, projectId, "compose", data.get('repository_URL'))
             if rep == "0":
@@ -73,7 +72,7 @@ class ProjectID(Resource):
     def get(self):
         data = request.get_json()
         projectId = getProjectId(data.get('project_name'), data.get('owner'))
-        if projectId:
+        if projectId != "":
             return {'project_id': projectId}, 200
         else:
             return {'code': "04001"}, 400

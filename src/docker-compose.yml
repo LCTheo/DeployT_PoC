@@ -6,7 +6,7 @@ services:
     container_name: register
     restart: unless-stopped
     environment:
-      name: register
+      - "name=register"
     networks:
       - services
 
@@ -15,7 +15,7 @@ services:
     container_name: api
     restart: unless-stopped
     environment:
-      name : api
+      - "name=api"
     networks:
       - services
       - proxy
@@ -38,7 +38,7 @@ services:
     container_name: registration
     restart: unless-stopped
     environment:
-      name: registration
+      - "name=registration"
     networks:
       - services
       - db-user
@@ -48,6 +48,7 @@ services:
     container_name: oauth
     restart: unless-stopped
     environment:
+      - "name=image"
       name: oauth
     networks:
       - services
@@ -58,6 +59,7 @@ services:
     container_name: deploy
     restart: unless-stopped
     environment:
+      - "name=image"
       name: deploy
     networks:
       - services
@@ -69,7 +71,7 @@ services:
     container_name: image
     restart: unless-stopped
     environment:
-      name: image
+      - "name=image"
     networks:
       - services
     volumes:
@@ -80,7 +82,8 @@ services:
     container_name: project
     restart: unless-stopped
     environment:
-      name: project
+      - "name=project"
+      - "DNSRecord=lcfamilly.site"
     networks:
       - services
       - db-user

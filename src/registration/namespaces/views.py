@@ -15,6 +15,8 @@ class registrationUser(Resource):
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
+        if User.objects(username=username).first():
+            return {'state': "fail"}, 200
         user = User(username=username, password=hashlib.sha512(password.encode("utf-8")).hexdigest(), testField=None)
         if user.save(force_insert=True):
             return {'state': "OK"}, 200

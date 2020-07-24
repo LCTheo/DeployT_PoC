@@ -1,16 +1,16 @@
 import os
 import tempfile
-from typing import List, Dict
-
 import yaml
-from git import Repo
 import requests
-
 import core
+from typing import List, Dict
+from git import Repo
 from namespaces.models import Project, Image, Container, Network, User, EntryPoint
 
 
-def addImage(projectId, name, repository_URL, repo_visibility, config_file_path) -> [str, str]:
+def addImage(projectId: str, name: str, repository_URL: str, repo_visibility: str, config_file_path: str) -> [str, str]:
+    """create an image from a Github repository and add it to database"""
+
     project = Project.objects(id=projectId).first()
     imageTag = projectId + '-' + name + ':latest'
     code, imageAddress = core.getService("image")
@@ -36,7 +36,9 @@ def addImage(projectId, name, repository_URL, repo_visibility, config_file_path)
         return "01001", ""
 
 
-def addPublicImage(imageTag):
+def addPublicImage(imageTag: str) -> (str, str):
+    """pull an image from official Docker registry and add it to database"""
+
     code, imageAddress = core.getService("image")
     if code == "0":
         response = requests.post('http://' + imageAddress + ':5000/image/pull',
@@ -52,7 +54,10 @@ def addPublicImage(imageTag):
         return "01001", ""
 
 
-def addContainer(projectId, name, imageId, environment, networks, exposedPort=None):
+def addContainer(projectId: str, name: str, imageId: str, environment: List[str], networks: List[str],
+                 exposedPort: List[int] = None) -> str:
+    """add a container and all these option to database"""
+
     project = Project.objects(id=projectId).first()
     image = Image.objects(imageId=imageId).first()
     if project:
@@ -91,7 +96,9 @@ def addContainer(projectId, name, imageId, environment, networks, exposedPort=No
         return "04001"
 
 
-def deleteProject(projectId):
+def deleteProject(projectId: str) -> str:
+    """delete a project and all object related to it from database and host"""
+
     project = Project.objects(id=projectId).first()
     res = deleteContainer(projectId, [])
     if res != "0":
@@ -100,7 +107,9 @@ def deleteProject(projectId):
     return "0"
 
 
-def deleteContainer(projectId, containers):
+def deleteContainer(projectId: str, containers: List[str]) -> str:
+    """remove a list of container from host and delete it from database"""
+
     project = Project.objects(id=projectId).first()
     if project:
         code, deployAddress = core.getService("deploy")
@@ -151,19 +160,23 @@ def deleteContainer(projectId, containers):
     return "0"
 
 
-def getProjectId(name, owner):
+def getProjectId(name: str, owner: str) -> str:
+    """get a project id based on is name and is owner"""
+
     user = User.objects(username=owner).first()
     if user:
         project = Project.objects(name=name, owner=user.id).first()
         if project:
             return str(project.id)
         else:
-            return None
+            return ""
     else:
-        return None
+        return ""
 
 
-def containerStatus(projectId: str, containers: List[str], action: str):
+def containerStatus(projectId: str, containers: List[str], action: str) -> str:
+    """change the status of a list of container form stopped to running or from running to stopped"""
+
     project = Project.objects(id=projectId).first()
     if project:
         code, deployAddress = core.getService("deploy")
@@ -211,6 +224,8 @@ def containerStatus(projectId: str, containers: List[str], action: str):
 
 
 def validateURL(URL: str) -> str:
+    """verify if the given URL is a valid git repository URL"""
+
     rep = requests.get(URL)
     if rep.status_code == 200:
         return "0"
@@ -218,7 +233,9 @@ def validateURL(URL: str) -> str:
         return "03006"
 
 
-def extractConfig(repository_URL, repo_visibility, config_file_path) -> [str, Dict]:
+def extractConfigFile(repository_URL: str, repo_visibility: str, config_file_path: str) -> [str, Dict]:
+    """extract the content of a docker-compose file given in a repository"""
+
     if repo_visibility == "public":
         d = tempfile.TemporaryDirectory(dir="/tmp")
         Repo.clone_from(repository_URL, d.name)
@@ -234,7 +251,9 @@ def extractConfig(repository_URL, repo_visibility, config_file_path) -> [str, Di
         return "0", config
 
 
-def redactContainer(config: Dict, projectId, configType, repo_URL=None) -> [str, List]:
+def redactContainer(config: Dict, projectId: str, configType: str, repo_URL: str = None) -> [str, List]:
+    """add containers to the database based on a configFile"""
+
     containerList = []
     if 'networks' in config:
         defaultNetwork = False
@@ -330,12 +349,15 @@ def redactContainer(config: Dict, projectId, configType, repo_URL=None) -> [str,
 
 
 def redactLabels(container: Container):
+    """create a list of laels for the Traefik service to expose the given container"""
+    DNSRecord = os.getenv('DNSRecord')
     labels = ['traefik.enable:true']
     for entryPoint in container.entryPoints:
         labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.rule:Host(`' + entryPoint.dns_prefix +
-                                                                        '.lcfamilly.site`)')
+                      DNSRecord + '`)')
         labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.entrypoints:http')
-        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.service:' + entryPoint.dns_prefix + '-service')
+        labels.append(
+            'traefik.http.routers.' + entryPoint.dns_prefix + '.service:' + entryPoint.dns_prefix + '-service')
         labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '-service.loadbalancer.server.port'
                       + str(entryPoint.port))
     return labels

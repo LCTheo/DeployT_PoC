@@ -1,7 +1,10 @@
+from typing import List, Dict
 
-def lisToDict(inlist):
-    outdict = {}
+
+def lisToDict(inlist: List[str]) -> Dict[str]:
+    """transform a list of string with a pattern like 'key:value' to a dictionary"""
+    outDict = {}
     for line in inlist:
         key, val = line.split(":")
-        outdict[key] = val
-    return outdict
+        outDict[key] = val
+    return outDict
