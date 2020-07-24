@@ -1,6 +1,6 @@
 # DeployT_PoC
 a proof of concept for a automated service of container deployment
-##who to run :
+## who to run :
 you only need a docker engine with docker-compose installed and a dns record
 
 - first create a proxy network for Traefik with  ``` docker network create proxy```
@@ -9,4 +9,4 @@ you only need a docker engine with docker-compose installed and a dns record
 - run the docker-compose file with ``` docker-compose up``` under src
 - access to the API with the api subdomains like <http://api.my-dns.com>
 
-##who to use :
+## who to use :
