@@ -391,7 +391,7 @@ def containerInfo(projectId: str, containers: List[str]) -> (str, Dict):
             entryPoints = []
             DNSRecord = os.getenv('DNSRecord')
             for entryPoint in container.entryPoints:
-                entryPoints.append([str(entryPoint.port), str(entryPoint.dns_prefix + DNSRecord)])
+                entryPoints.append([str(entryPoint.port), str(entryPoint.dns_prefix + '.' + DNSRecord)])
             contInfo['entryPoints'] = entryPoints
             contInfo['status'] = container.status
             Infos[containerName] = contInfo

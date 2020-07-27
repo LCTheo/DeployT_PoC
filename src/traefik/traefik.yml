@@ -16,10 +16,8 @@ providers:
 certificatesResolvers:
   myresolver:
     acme:
-      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
       email: "lecoz.theo@gmail.com"
       storage: "/acme.json"
       dnsChallenge:
         provider: ovh
         delayBeforeCheck: 10
-
