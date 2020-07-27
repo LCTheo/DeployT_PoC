@@ -5,7 +5,7 @@ import requests
 import core
 from typing import List, Dict
 from git import Repo
-from namespaces.models import Project, Image, Container, Network, User, EntryPoint
+from namespaces.models import Project, Image, Container, Network, User, EntryPoint, api
 
 
 def addImage(projectId: str, name: str, repository_URL: str, repo_visibility: str, config_file_path: str) -> [str, str]:
@@ -358,7 +358,7 @@ def redactLabels(container: Container):
         labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.entrypoints:http')
         labels.append(
             'traefik.http.routers.' + entryPoint.dns_prefix + '.service:' + entryPoint.dns_prefix + '-service')
-        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '-service.loadbalancer.server.port'
+        labels.append('traefik.http.services.' + entryPoint.dns_prefix + '-service.loadbalancer.server.port:'
                       + str(entryPoint.port))
     return labels
 
