@@ -79,7 +79,7 @@ def addContainer(projectId: str, name: str, imageId: str, environment: List[str]
             if exposedPort:
                 entryPoint = []
                 for port in exposedPort:
-                    dns = projectId + '-' + name + port
+                    dns = projectId + '-' + name + str(port)
                     entryPoint.append(EntryPoint(port=port, dns_prefix=dns))
                 container = Container(containerId=projectId + '-' + name, imageId=imageId, environment=environment,
                                       network=networks, entryPoints=entryPoint)
@@ -349,11 +349,11 @@ def redactContainer(config: Dict, projectId: str, configType: str, repo_URL: str
 
 
 def redactLabels(container: Container):
-    """create a list of laels for the Traefik service to expose the given container"""
+    """create a list of labels for the Traefik service to expose the given container"""
     DNSRecord = os.getenv('DNSRecord')
     labels = ['traefik.enable:true']
     for entryPoint in container.entryPoints:
-        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.rule:Host(`' + entryPoint.dns_prefix +
+        labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.rule:Host(`' + entryPoint.dns_prefix + '.' +
                       DNSRecord + '`)')
         labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '.entrypoints:http')
         labels.append(
