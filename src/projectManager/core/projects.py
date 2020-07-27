@@ -31,7 +31,7 @@ def addImage(projectId: str, name: str, repository_URL: str, repo_visibility: st
             image.save()
             return "0", imageID
         else:
-            return "03X" + response.json()['code'], ""
+            return "03X" + response.json().get('code'), ""
     else:
         return "01001", ""
 
