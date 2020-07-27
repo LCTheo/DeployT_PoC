@@ -25,7 +25,7 @@ class DockerImage:
             context = d.name + "/" + dockerfilePath
         try:
             res = self.client.images.build(path=context, tag=tag, rm=True, nocache=True,
-                                           dockerfile="./Dockerfile")
+                                           dockerfile="/Dockerfile")
             d.cleanup()
             return "0", res[0]
         except docker.errors.APIError:
