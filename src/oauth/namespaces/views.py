@@ -18,11 +18,18 @@ class access_token(Resource):
         user = User.objects(username=data.get('username')).first()
         if user:
             if user.password == hashlib.sha512(data.get('password').encode("utf-8")).hexdigest():
-                if not Token.objects(username=user.username).first():
+                token = Token.objects(username=user.username).first()
+                if token is None:
                     token = Token(username=user.username, access_token=gen_salt(50), expires=datetime.now() + timedelta(hours=1))
                     token.save(force_insert=True)
                     return {'token': token.access_token}, 200
                 else:
+                    if token.expires < datetime.now():
+                        token.delete()
+                        token = Token(username=user.username, access_token=gen_salt(50),
+                                      expires=datetime.now() + timedelta(hours=1))
+                        token.save(force_insert=True)
+                        return {'token': token.access_token}, 200
                     return {'signin': True}, 200
             else:
                 return {}, 401

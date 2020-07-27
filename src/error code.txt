@@ -34,7 +34,7 @@ liste 00 000:
 	005: wrong action
 	006: repo don't exist
 	007: unknow image
-
+	008: unknow user
 
 	
 

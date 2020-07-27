@@ -21,12 +21,12 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.deploytapi.rule=Host(`api.lcfamilly.site`)"
+      - "traefik.http.routers.deploytapi.rule=Host(`api.${DNS_RECORD:?err}`)"
       - "traefik.http.routers.deploytapi.entrypoints=http"
       - "traefik.http.routers.deploytapi.service=deploytapi-service"
       - "traefik.http.services.deploytapi-service.loadbalancer.server.port=5000"
 
-      - "traefik.http.routers.deploytapi-https.rule=Host(`api.lcfamilly.site`)"
+      - "traefik.http.routers.deploytapi-https.rule=Host(`api.${DNS_RECORD:?err}`)"
       - "traefik.http.routers.deploytapi-https.entrypoints=https"
       - "traefik.http.routers.deploytapi-https.service=deploytapi-https-service"
       - "traefik.http.services.deploytapi-https-service.loadbalancer.server.port=5000"
@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
     environment:
       - "name=project"
-      - "DNSRecord=lcfamilly.site"
+      - "DNSRecord=${DNS_RECORD:?err}"
     networks:
       - services
       - db-user
@@ -124,12 +124,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=http"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.lcfamilly.site`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DNS_RECORD:?err}`)"
       - "traefik.http.middlewares.traefik-auth.basicauth.users=deployt:$$apr1$$JbRZ2xcW$$20rGKVaYGV02k.z1WL9pe1"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
       - "traefik.http.routers.traefik-secure.entrypoints=https"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.lcfamilly.site`)"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.${DNS_RECORD:?err}`)"
       - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=myresolver"

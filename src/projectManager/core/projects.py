@@ -361,3 +361,53 @@ def redactLabels(container: Container):
         labels.append('traefik.http.routers.' + entryPoint.dns_prefix + '-service.loadbalancer.server.port'
                       + str(entryPoint.port))
     return labels
+
+
+def containerInfo(projectId: str, containers: List[str]) -> (str, Dict):
+    project = Project.objects(id=projectId).first()
+    if project:
+        if len(containers) == 0:
+            for key in project.containers:
+                containers.append(key)
+        Infos = {}
+        for containerName in containers:
+            contInfo = {}
+            container = project.containers[containerName]
+            image = Image.objects(imageId=container.imageId).first()
+            if image.owner is None:
+                image = {'type': 'public', 'image': image.image_tag}
+            else:
+                image = {'type': 'custom', 'base_repo': image.repository_url,
+                         'config_file_path': image.config_file_path}
+            contInfo['image'] = image
+            envVar = []
+            for var in container.environment:
+                envVar.append(str(var))
+            contInfo['environment_variable'] = envVar
+            networks = []
+            for network in container.network:
+                networks.append(str(network))
+            contInfo['networks'] = networks
+            entryPoints = []
+            DNSRecord = os.getenv('DNSRecord')
+            for entryPoint in container.entryPoints:
+                entryPoints.append([str(entryPoint.port), str(entryPoint.dns_prefix + DNSRecord)])
+            contInfo['entryPoints'] = entryPoints
+            contInfo['status'] = container.status
+            Infos[containerName] = contInfo
+        return "0", Infos
+    else:
+        return "04001", {}
+
+
+def projectInfo(username: str) -> (str, List[str]):
+    owner = User.objects(username=username).first()
+    if owner:
+        projects = Project.objects(owner=owner)
+        Info = []
+        for project in projects:
+            Info.append(project.name)
+
+        return "0", Info
+    else:
+        return "04008", []

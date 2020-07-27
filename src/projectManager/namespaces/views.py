@@ -1,7 +1,8 @@
 from flask import request
 from flask_restx import Namespace, Resource
 
-from .models import project_setting, dockerfile_setting, getID, container, ProjectID, manage_project, compose_setting
+from .models import project_setting, dockerfile_setting, getID, container, ProjectID, manage_project, compose_setting, \
+    username
 from core import *
 
 api = Namespace('views', description='route of the api', path="/")
@@ -9,6 +10,15 @@ api = Namespace('views', description='route of the api', path="/")
 
 @api.route("/project")
 class Create(Resource):
+
+    @api.expect(username)
+    def get(self):
+        data = request.get_json()
+        res, info = projectInfo(data.get('username'))
+        if res == "0":
+            return {'project_list': info}, 200
+        else:
+            return {'code': res}, 400
 
     @api.expect(project_setting)
     def post(self):
@@ -82,9 +92,14 @@ class ProjectID(Resource):
 class ManageContainer(Resource):
 
     @api.expect(container)
-    def get(self):
+    def get(self, projectId):
         """get container Spec"""
-        return {}, 200
+        data = request.get_json()
+        res, info = containerInfo(projectId, data.get('container_list'))
+        if res == "0":
+            return {'containerInfo': info}, 200
+        else:
+            return {'code': res}, 400
 
     @api.expect(container)
     def delete(self, projectId):

@@ -93,3 +93,7 @@ container = api.model('container list', {
 manage_project = api.inherit('manage project', container, {
     'action': fields.String(required=True, enum=['start', 'stop']),
 })
+
+username = api.model('username', {
+    'username': fields.String(required=True)
+})
