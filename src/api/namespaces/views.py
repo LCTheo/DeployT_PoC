@@ -164,10 +164,10 @@ class createProject(Resource):
 
 
 @api.route("/api/project/list")
-class createProject(Resource):
+class listProject(Resource):
 
     @api.expect(token_model)
-    def get(self):
+    def post(self):
         """list project"""
         data = request.get_json()
         code, address = getService("oauth")
@@ -371,8 +371,12 @@ class manageContainer(Resource):
         else:
             return {}, 401
 
+
+@api.route("/api/project/<string:projectName>/info")
+class containerInfo(Resource):
+
     @api.expect(container_list)
-    def get(self, projectName):
+    def post(self, projectName):
         """get container info"""
         data = request.get_json()
         code, address = getService("oauth")

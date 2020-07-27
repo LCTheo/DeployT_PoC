@@ -49,7 +49,7 @@ def addPublicImage(imageTag: str) -> (str, str):
             image.save()
             return "0", imageID
         else:
-            return "03X" + response.json()['code'], ""
+            return "03X" + response.json().get('code'), ""
     else:
         return "01001", ""
 
@@ -124,7 +124,7 @@ def deleteContainer(projectId: str, containers: List[str]) -> str:
                         responseDep = requests.delete(
                             'http://' + deployAddress + ':5000/manage/' + container.containerId)
                         if responseDep.status_code != 200:
-                            return "02X" + responseDep.json()['code']
+                            return "02X" + responseDep.json().get('code')
                     code, imageAddress = core.getService("image")
                     if code == "0":
                         response = requests.delete('http://' + imageAddress + ':5000/image/build',
@@ -137,7 +137,7 @@ def deleteContainer(projectId: str, containers: List[str]) -> str:
                                 image.delete()
                             project.save()
                         else:
-                            return "04X" + response.json()['code']
+                            return "04X" + response.json().get('code')
                     else:
                         return "01001"
                 else:
@@ -206,7 +206,7 @@ def containerStatus(projectId: str, containers: List[str], action: str) -> str:
                             if response.status_code == 200:
                                 container.status = 'running'
                             else:
-                                return "02X" + response.json()['code']
+                                return "02X" + response.json().get('code')
                     elif action == "stop":
                         if container.status == "running":
                             response = requests.delete(
