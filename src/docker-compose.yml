@@ -48,8 +48,7 @@ services:
     container_name: oauth
     restart: unless-stopped
     environment:
-      - "name=image"
-      name: oauth
+      - "name=oauth"
     networks:
       - services
       - db-user
@@ -59,8 +58,7 @@ services:
     container_name: deploy
     restart: unless-stopped
     environment:
-      - "name=image"
-      name: deploy
+      - "name=deploy"
     networks:
       - services
     volumes:
