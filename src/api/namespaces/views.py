@@ -301,19 +301,22 @@ class manageContainer(Resource):
                 'repo_visibility': 'public'
                 'config_file_path': '.'
 
+                Warning!! : this example is not completely functional
+
         from Dockerfile:
-            if you want to discribe yourself the configuration you need at least the name in addition of the four first argument
-            config_file_path is the path from the project root were is the Dockerfile
-            example:
-                'config_type': 'Dockerfile'
-                'repository_URL': 'https://github.com/LCTheo/testAPP.git'
-                'repo_visibility': 'public'
-                'config_file_path': '.'
-                'name': 'myContainer'
-                'environment': ['MY_VARIABLE=My_value']
-                'network': ['myContainerNetwork']
-                'exposedPort': [5000, 80]
-                """
+        if you want to describe yourself the configuration you need at least the name in addition of
+        the four first argument.
+        config_file_path is the path from the project root were is the Dockerfile
+        example:
+            'config_type': 'Dockerfile'
+            'repository_URL': 'https://github.com/LCTheo/testAPP.git'
+            'repo_visibility':
+            'public' 'config_file_path': '.'
+            'name': 'myContainer'
+            'environment': ['MY_VARIABLE=My_value']
+            'network': ['myContainerNetwork']
+            'exposedPort': [5000, 80]
+        """
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
