@@ -1,6 +1,6 @@
 from flask_restx import fields, Namespace
 
-api = Namespace('models', description='all models used')
+api = Namespace('models', description='all models used', doc=False)
 
 user_definition = api.model('User Informations', {
     'username': fields.String(required=True),

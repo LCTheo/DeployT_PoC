@@ -13,6 +13,7 @@ api = Namespace('views', description='route of the api', path="/")
 class status(Resource):
 
     def get(self):
+        """see the status of all internal service"""
         code, address = getService("register")
         if code == "0":
             response = requests.get('http://' + address + ':5000/status')
@@ -27,6 +28,7 @@ class user_registration(Resource):
 
     @api.expect(user_definition)
     def post(self):
+        """create a new user"""
         data = request.get_json()
         code, address = getService("registration")
         if code == "0":
@@ -43,6 +45,7 @@ class user_registration(Resource):
 
     @api.expect(delete_model)
     def delete(self):
+        """delete form the database the user"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -71,6 +74,7 @@ class signin(Resource):
 
     @api.expect(user_definition)
     def post(self):
+        """sign in to get a token"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -90,6 +94,7 @@ class signout(Resource):
 
     @api.expect(token_model)
     def post(self):
+        """sign out to revoke the token"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -108,6 +113,12 @@ class setting(Resource):
 
     @api.expect(setting_model)
     def put(self):
+        """modify a user information like password.
+
+        example:
+            'field_name': 'password'
+            'new_value': 'myNewPassword'
+            """
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -137,7 +148,8 @@ class createProject(Resource):
 
     @api.expect(project_setting)
     def post(self):
-        """create project"""
+        """create project
+        project type have no incidence yet"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -168,7 +180,7 @@ class listProject(Resource):
 
     @api.expect(token_model)
     def post(self):
-        """list project"""
+        """list all current project"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -197,7 +209,7 @@ class manageProject(Resource):
 
     @api.expect(token_model)
     def delete(self, projectName):
-        """delete project"""
+        """delete the given project"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -230,7 +242,14 @@ class manageProject(Resource):
 
     @api.expect(manage_project)
     def post(self, projectName):
-        """start, stop project"""
+        """change the status of the container in the given project
+        if container_list if empty then all container are included
+
+        example:
+            'action': 'start'
+            'container_list': []
+        it will start all containers of the given project
+        """
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -271,7 +290,30 @@ class manageContainer(Resource):
 
     @api.expect(container_setting)
     def post(self, projectName):
-        """add container"""
+        """add containers to the given project.
+        there is two usage available
+        from a compose file:
+            if you want to add container with a docker-compose file then you need to only give the four first argument
+            config_file_path is the path from the project root were is the docker-compose file
+            example:
+                'config_type': 'Compose'
+                'repository_URL': 'https://github.com/LCTheo/securDoc.git'
+                'repo_visibility': 'public'
+                'config_file_path': '.'
+
+        from Dockerfile:
+            if you want to discribe yourself the configuration you need at least the name in addition of the four first argument
+            config_file_path is the path from the project root were is the Dockerfile
+            example:
+                'config_type': 'Dockerfile'
+                'repository_URL': 'https://github.com/LCTheo/testAPP.git'
+                'repo_visibility': 'public'
+                'config_file_path': '.'
+                'name': 'myContainer'
+                'environment': ['MY_VARIABLE=My_value']
+                'network': ['myContainerNetwork']
+                'exposedPort': [5000, 80]
+                """
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -337,7 +379,9 @@ class manageContainer(Resource):
 
     @api.expect(container_list)
     def delete(self, projectName):
-        """delete container"""
+        """delete the listed container from the project
+        if container_list if empty then all container are included
+        """
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":
@@ -377,7 +421,8 @@ class containerInfo(Resource):
 
     @api.expect(container_list)
     def post(self, projectName):
-        """get container info"""
+        """get containers information
+        if container_list if empty then all container are included"""
         data = request.get_json()
         code, address = getService("oauth")
         if code == "0":

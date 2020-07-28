@@ -108,7 +108,9 @@ def deleteProject(projectId: str) -> str:
 
 
 def deleteContainer(projectId: str, containers: List[str]) -> str:
-    """remove a list of container from host and delete it from database"""
+    """remove a list of container from host and delete it from database.
+
+    if the list if empty then all container are included"""
 
     project = Project.objects(id=projectId).first()
     if project:
@@ -175,7 +177,9 @@ def getProjectId(name: str, owner: str) -> str:
 
 
 def containerStatus(projectId: str, containers: List[str], action: str) -> str:
-    """change the status of a list of container form stopped to running or from running to stopped"""
+    """change the status of a list of container form stopped to running or from running to stopped.
+
+    if the list if empty then all container are included"""
 
     project = Project.objects(id=projectId).first()
     if project:
@@ -364,6 +368,10 @@ def redactLabels(container: Container):
 
 
 def containerInfo(projectId: str, containers: List[str]) -> (str, Dict):
+    """redact a dictionary with all info of each container in the list for the given project.
+
+    if the list if empty then all container are included
+    """
     project = Project.objects(id=projectId).first()
     if project:
         if len(containers) == 0:
@@ -401,6 +409,7 @@ def containerInfo(projectId: str, containers: List[str]) -> (str, Dict):
 
 
 def projectInfo(username: str) -> (str, List[str]):
+    """list all open project of an user"""
     owner = User.objects(username=username).first()
     if owner:
         projects = Project.objects(owner=owner)
