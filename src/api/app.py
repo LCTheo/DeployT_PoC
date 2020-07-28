@@ -1,9 +1,8 @@
 import os
 from flask import Flask
 from flask_cors import CORS
-from namespaces import api, specs_url
+from namespaces import api
 from core import init
-from flask_restx import Api as rpapi
 
 
 app = Flask(__name__)

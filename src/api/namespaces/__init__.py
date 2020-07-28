@@ -1,6 +1,4 @@
-import flask
 from flask_restx import Api
-
 from .models import api as ns1
 from .views import api as ns2
 
