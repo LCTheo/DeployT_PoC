@@ -1,0 +1,4 @@
+services:
+  traefik:
+    volumes:
+      - ./traefik/traefik_dev.yml:/traefik.yml
