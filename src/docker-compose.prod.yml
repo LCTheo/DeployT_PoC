@@ -2,3 +2,8 @@ services:
   traefik:
     volumes:
       - ./traefik/traefik.yml:/traefik.yml
+      environment:
+        - "OVH_ENDPOINT=ovh-eu"
+        - "OVH_APPLICATION_KEY="
+        - "OVH_APPLICATION_SECRET="
+        - "OVH_CONSUMER_KEY="

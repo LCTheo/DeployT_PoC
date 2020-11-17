@@ -113,10 +113,6 @@ services:
       - ./traefik/acme.json:/acme.json
     environment:
       - "TZ=Europe/Paris"
-      - "OVH_ENDPOINT=ovh-eu"
-      - "OVH_APPLICATION_KEY="
-      - "OVH_APPLICATION_SECRET="
-      - "OVH_CONSUMER_KEY="
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.entrypoints=http"
